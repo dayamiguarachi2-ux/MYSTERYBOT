@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MysteryBot 🤖</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: white;
+            display: flex;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .contenedor {
+            width: 600px;
+            background: #1f2937;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #chat {
+            height: 350px;
+            overflow-y: auto;
+            background: #111827;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mensaje {
+            margin: 12px 0;
+        }
+
+        .usuario {
+            color: #60a5fa;
+        }
+
+        .bot {
+            color: #a78bfa;
+        }
+
+        .entrada {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #7c3aed;
+            color: white;
+        }
+
+        button:hover {
+            background: #6d28d9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>🕵️ MysteryBot</h1>
+
+        <div id="chat">
+            <div class="mensaje bot">
+                <strong>MysteryBot:</strong>
+                ¡Hola! Soy MysteryBot 🕵️, tu detective virtual.
+Hoy tengo un misterio para ti.
+Hay un caso que necesita ser resuelto y necesito tu ayuda.
+¿Estás listo para investigar?
+            </div>
+        </div>
+
+        <div class="entrada">
+            <input
+                id="mensaje"
+                type="text"
+                placeholder="Escribe tu mensaje..."
+                onkeydown="if(event.key === 'Enter') enviarMensaje()"
+            >
+
+            <button onclick="enviarMensaje()">Enviar</button>
+        </div>
+
+    </div>
+
+    <script>
+        async function enviarMensaje() {
+
+            const input = document.getElementById("mensaje");
+            const chat = document.getElementById("chat");
+
+            const mensaje = input.value.trim();
+
+            if (mensaje === "") {
+                return;
+            }
+
+            chat.innerHTML += `
+                <div class="mensaje usuario">
+                    <strong>Tú:</strong> ${mensaje}
+                </div>
+            `;
+
+            input.value = "";
+
+            chat.innerHTML += `
+                <div class="mensaje bot" id="cargando">
+                    <strong>MysteryBot:</strong> Pensando... 🔎
+                </div>
+            `;
+
+            chat.scrollTop = chat.scrollHeight;
+
+            try {
+
+                const respuesta = await fetch("/api/chat", {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        mensaje: mensaje
+                    })
+                });
+
+                const datos = await respuesta.json();
+
+                document.getElementById("cargando").remove();
+
+                chat.innerHTML += `
+                    <div class="mensaje bot">
+                        <strong>MysteryBot:</strong> ${datos.respuesta}
+                    </div>
+                `;
+
+            } catch (error) {
+
+                document.getElementById("cargando").textContent =
+                    "❌ No pude conectarme con la IA.";
+
+                console.error(error);
+            }
+
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+
+</body>
+
+</html>
